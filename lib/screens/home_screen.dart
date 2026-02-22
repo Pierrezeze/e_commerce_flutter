@@ -11,24 +11,31 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
-    // Calcul automatique des statistiques à chaque build
+    // --- CALCUL DES STATISTIQUES ---
+    // On récupère le nombre total d'articles dans la liste globale
     int totalProducts = globalProducts.length;
+
+    // On calcule la somme totale des prix en utilisant 'fold'
+    // sum commence à 0, et on ajoute le prix de chaque item de la liste
     double totalValue = globalProducts.fold(0, (sum, item) => sum + item.price);
 
     return Scaffold(
       body: Stack(
         children: [
-          // --- 1. FOND DE L'ÉCRAN (DÉGRADÉ) ---
+          // --- 1. DESIGN DE FOND (DÉGRADÉ) ---
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Color(0xFF1A237E), // Bleu profond
-                  Color(0xFFF5F7FA), // Gris clair
+                  Color(0xFF1A237E), // Bleu nuit en haut
+                  Color(0xFFF5F7FA), // Gris très clair pour le reste
                 ],
-                stops: [0.0, 0.5],
+                stops: [
+                  0.0,
+                  0.5,
+                ], // Le bleu occupe les 50 premiers % de l'écran
               ),
             ),
           ),
@@ -40,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // EN-TÊTE AVEC ICÔNE STORE
+                  // EN-TÊTE : Message de bienvenue et Icône
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -65,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ],
                       ),
-                      // L'ICÔNE DU STORE AMÉLIORÉE
+                      // Badge circulaire avec l'icône de boutique
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
@@ -84,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   const SizedBox(height: 40),
 
-                  // --- SECTION STATISTIQUES ---
+                  // --- SECTION STATISTIQUES (CARTES) ---
                   const Text(
                     "Vue d'ensemble",
                     style: TextStyle(
@@ -97,7 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   Row(
                     children: [
-                      // Card : Nombre de produits
+                      // Carte affichant le nombre de produits en stock
                       Expanded(
                         child: _buildStatCard(
                           title: "Produits",
@@ -107,11 +114,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       const SizedBox(width: 15),
-                      // Card : Valeur totale
+                      // Carte affichant la valeur monétaire totale en HTG
                       Expanded(
                         child: _buildStatCard(
                           title: "Valeur Totale",
-                          value: "${totalValue.toStringAsFixed(2)} €",
+                          value: "${totalValue.toStringAsFixed(2)} HTG",
                           icon: Icons.account_balance_wallet_rounded,
                           color: Colors.orangeAccent,
                         ),
@@ -121,7 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   const SizedBox(height: 30),
 
-                  // --- BANNIÈRE DÉCO ---
+                  // --- BANNIÈRE DÉCORATIVE / INFO ---
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(20),
@@ -158,6 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   fontSize: 16,
                                 ),
                               ),
+                              // Sous-titre explicatif
                               Text(
                                 "Suivez vos inventaires en temps réel.",
                                 style: TextStyle(
@@ -180,7 +188,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Widget réutilisable pour les cartes de statistiques
+  // --- WIDGET RÉUTILISABLE POUR LES CARTES DE STATISTIQUES ---
   Widget _buildStatCard({
     required String title,
     required String value,
@@ -203,6 +211,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Icône avec un fond coloré très léger
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
@@ -212,6 +221,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Icon(icon, color: color, size: 28),
           ),
           const SizedBox(height: 20),
+          // 'FittedBox' évite que le texte déborde si le prix est trop long
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
@@ -224,6 +234,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SizedBox(height: 5),
+          // Libellé de la statistique
           Text(
             title,
             style: const TextStyle(

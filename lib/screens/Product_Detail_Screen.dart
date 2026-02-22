@@ -7,22 +7,24 @@ class ProductDetailScreen extends StatelessWidget {
 
   const ProductDetailScreen({super.key, required this.product});
 
-  // --- OUVRIR L'IMAGE EN PLEIN ÉCRAN ---
+  // --- FONCTION POUR OUVRIR L'IMAGE EN PLEIN ÉCRAN ---
   void _showFullScreenImage(BuildContext context, File imageFile) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => Scaffold(
-          backgroundColor: Colors.black,
+          backgroundColor:
+              Colors.black, // Fond noir pour faire ressortir l'image
           appBar: AppBar(
             backgroundColor: Colors.black,
             iconTheme: const IconThemeData(color: Colors.white),
           ),
           body: Center(
             child: Hero(
-              // TAG SYNCHRONISÉ
+              // Même tag que sur l'écran précédent pour l'animation de transition
               tag: 'product_image_${product.name}',
               child: InteractiveViewer(
+                // Permet à l'utilisateur de zoomer et déplacer l'image
                 panEnabled: true,
                 minScale: 0.5,
                 maxScale: 4.0,
@@ -37,6 +39,7 @@ class ProductDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Vérification de la validité du fichier image pour éviter les plantages
     bool imageExists = false;
     try {
       if (product.image != null && product.image!.existsSync()) {
@@ -47,12 +50,13 @@ class ProductDetailScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: const Color(0xFFF5F7FA), // Gris très clair moderne
       body: CustomScrollView(
+        // CustomScrollView permet de créer l'effet d'image qui s'enroule (Sliver)
         slivers: [
           SliverAppBar(
-            expandedHeight: 400,
-            pinned: true,
+            expandedHeight: 400, // Hauteur de l'image en haut
+            pinned: true, // Garde la barre de retour visible lors du scroll
             backgroundColor: const Color(0xFF1A237E),
             leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -103,8 +107,11 @@ class ProductDetailScreen extends StatelessWidget {
               ),
             ),
           ),
+
+          // Contenu textuel sous l'image
           SliverToBoxAdapter(
             child: Container(
+              // Matrix4 permet de faire remonter légèrement le bloc blanc sur l'image
               transform: Matrix4.translationValues(0, -20, 0),
               decoration: const BoxDecoration(
                 color: Colors.white,
@@ -117,6 +124,7 @@ class ProductDetailScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Petite barre de décoration style "BottomSheet"
                   Center(
                     child: Container(
                       width: 40,
@@ -129,7 +137,7 @@ class ProductDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
 
-                  // Catégorie
+                  // Affichage de la catégorie
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -151,7 +159,7 @@ class ProductDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
 
-                  // Titre et Prix
+                  // Nom du produit et Prix en HTG
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -166,7 +174,7 @@ class ProductDetailScreen extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        "${product.price.toStringAsFixed(2)} €",
+                        "${product.price.toStringAsFixed(2)} HTG",
                         style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -177,7 +185,6 @@ class ProductDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 25),
 
-                  // Description
                   const Text(
                     "Description",
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -188,19 +195,19 @@ class ProductDetailScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.grey[600],
-                      height: 1.5,
+                      height: 1.5, // Améliore la lisibilité du texte
                     ),
                   ),
 
                   const SizedBox(height: 30),
 
-                  // --- SECTION COULEURS MISE À JOUR ---
                   const Text(
                     "Couleurs disponibles",
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 15),
 
+                  // Affichage dynamique des cercles de couleurs
                   product.availableColors.isNotEmpty
                       ? Wrap(
                           spacing: 15,
@@ -213,7 +220,9 @@ class ProductDetailScreen extends StatelessWidget {
                           style: TextStyle(color: Colors.grey),
                         ),
 
-                  const SizedBox(height: 100),
+                  const SizedBox(
+                    height: 100,
+                  ), // Espace pour ne pas cacher le contenu par le bouton
                 ],
               ),
             ),
@@ -224,6 +233,7 @@ class ProductDetailScreen extends StatelessWidget {
     );
   }
 
+  // Widget utilitaire pour créer les pastilles de couleur
   Widget _buildColorOption(Color color) {
     return Container(
       padding: const EdgeInsets.all(3),
@@ -235,6 +245,7 @@ class ProductDetailScreen extends StatelessWidget {
     );
   }
 
+  // Barre fixe en bas pour l'action principale (Ajout panier)
   Widget _buildBottomBar(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(20.0),

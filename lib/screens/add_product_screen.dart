@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
-import 'package:image_picker/image_picker.dart';
+import 'package:image_picker/image_picker.dart'; // Pour choisir des photos
 import '../models/product.dart';
 
 class AddProductScreen extends StatefulWidget {
-  final VoidCallback? onSuccess;
+  final VoidCallback? onSuccess; // Callback déclenché après un ajout réussi
 
   const AddProductScreen({super.key, this.onSuccess});
 
@@ -13,13 +13,17 @@ class AddProductScreen extends StatefulWidget {
 }
 
 class _AddProductScreenState extends State<AddProductScreen> {
+  // --- CONTRÔLEURS DE TEXTE ---
+  // Permettent de récupérer les valeurs saisies par l'utilisateur
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
   final _descController = TextEditingController();
 
+  // --- ÉTAT DU FORMULAIRE ---
   String _selectedCategory = 'Electroniques';
-  File? _image;
-  List<Color> _selectedColors = [];
+  File? _image; // Stocke le fichier image sélectionné
+  List<Color> _selectedColors =
+      []; // Liste des couleurs choisies pour le produit
 
   final List<String> _categories = [
     'Electroniques',
@@ -40,31 +44,38 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
   @override
   void dispose() {
+    // NETTOYAGE : Libère la mémoire des contrôleurs quand on quitte l'écran
     _nameController.dispose();
     _priceController.dispose();
     _descController.dispose();
     super.dispose();
   }
 
+  // --- LOGIQUE : SÉLECTION D'IMAGE ---
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
+    // Ouvre la galerie du téléphone
     final XFile? pickedFile = await picker.pickImage(
       source: ImageSource.gallery,
     );
 
     if (pickedFile != null) {
       setState(() {
-        _image = File(pickedFile.path);
+        _image = File(pickedFile.path); // Met à jour l'aperçu
       });
     }
   }
 
+  // --- LOGIQUE : SAUVEGARDE ---
   void _saveProduct() {
+    // Ferme le clavier automatiquement
     FocusScope.of(context).unfocus();
 
+    // Gestion du format de prix (remplace virgule par point pour le calcul)
     String priceText = _priceController.text.replaceAll(',', '.');
     double? parsedPrice = double.tryParse(priceText);
 
+    // VALIDATION : Vérifie si les champs obligatoires sont remplis
     if (_nameController.text.isEmpty ||
         parsedPrice == null ||
         parsedPrice <= 0) {
@@ -77,6 +88,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
       return;
     }
 
+    // CRÉATION de l'objet Produit
     final newProduct = Product(
       name: _nameController.text,
       price: parsedPrice,
@@ -86,13 +98,15 @@ class _AddProductScreenState extends State<AddProductScreen> {
       availableColors: List.from(_selectedColors),
     );
 
+    // Ajout à la liste globale statique
     globalProducts.add(newProduct);
 
+    // Informe le widget parent que l'ajout est réussi (pour rafraîchir l'UI)
     if (widget.onSuccess != null) {
       widget.onSuccess!();
     }
 
-    // Reset du formulaire
+    // RÉINITIALISATION du formulaire pour un nouvel ajout
     _nameController.clear();
     _priceController.clear();
     _descController.clear();
@@ -106,7 +120,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA), // Fond gris clair moderne
+      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
         title: const Text(
           "Nouveau Produit",
@@ -118,11 +132,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --- SECTION IMAGE ---
-            const Text(
-              "Image du produit",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
+            // --- ZONE DE SÉLECTION D'IMAGE ---
+            _buildLabel("Image du produit"),
             const SizedBox(height: 12),
             Center(
               child: GestureDetector(
@@ -167,7 +178,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
             ),
             const SizedBox(height: 25),
 
-            // --- FORMULAIRE ---
+            // --- CHAMPS DE TEXTE ---
             _buildLabel("Détails du produit"),
             const SizedBox(height: 10),
             TextField(
@@ -178,12 +189,14 @@ class _AddProductScreenState extends State<AddProductScreen> {
               ),
             ),
             const SizedBox(height: 15),
+
+            // Champ Prix configuré pour la monnaie locale (HTG)
             TextField(
               controller: _priceController,
               decoration: const InputDecoration(
-                labelText: "Prix (€)",
-                hintText: "Ex: 12.99",
-                prefixIcon: Icon(Icons.euro_symbol_rounded),
+                labelText: "Prix (HTG)",
+                hintText: "Ex: 1500.00",
+                prefixIcon: Icon(Icons.payments_outlined),
               ),
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
@@ -200,7 +213,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
             ),
             const SizedBox(height: 25),
 
-            // --- CATÉGORIE ---
+            // --- SÉLECTION DE CATÉGORIE (DROPDOWN) ---
             _buildLabel("Catégorie"),
             const SizedBox(height: 10),
             Container(
@@ -214,21 +227,19 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 child: DropdownButton<String>(
                   value: _selectedCategory,
                   isExpanded: true,
-                  items: _categories.map((String cat) {
-                    return DropdownMenuItem<String>(
-                      value: cat,
-                      child: Text(cat),
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    setState(() => _selectedCategory = newValue!);
-                  },
+                  items: _categories
+                      .map(
+                        (cat) => DropdownMenuItem(value: cat, child: Text(cat)),
+                      )
+                      .toList(),
+                  onChanged: (newValue) =>
+                      setState(() => _selectedCategory = newValue!),
                 ),
               ),
             ),
             const SizedBox(height: 25),
 
-            // --- COULEURS ---
+            // --- CHOIX DES COULEURS (WRAP) ---
             _buildLabel("Couleurs disponibles"),
             const SizedBox(height: 12),
             Wrap(
@@ -273,13 +284,12 @@ class _AddProductScreenState extends State<AddProductScreen> {
             ),
             const SizedBox(height: 40),
 
-            // --- BOUTON ENREGISTRER ---
+            // --- BOUTON DE VALIDATION FINAL ---
             ElevatedButton(
               onPressed: _saveProduct,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF1A237E),
                 minimumSize: const Size(double.infinity, 60),
-                elevation: 4,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18),
                 ),
@@ -290,7 +300,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   color: Colors.white,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  letterSpacing: 1.1,
                 ),
               ),
             ),
@@ -301,6 +310,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
     );
   }
 
+  // --- PETIT HELPER POUR LES TITRES DE SECTION ---
   Widget _buildLabel(String text) {
     return Text(
       text,

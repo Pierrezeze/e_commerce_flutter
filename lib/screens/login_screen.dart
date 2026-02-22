@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-// IMPORTATION IMPORTANTE :
-import 'loading_screen.dart'; // <-- Assure-toi de créer ce fichier avec le code précédent
+// Importation de l'écran de chargement personnalisé
+import 'loading_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -10,35 +10,45 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  // État pour gérer l'affichage du spinner sur le bouton
   bool _isLoading = false;
+
+  // Clé globale pour identifier et valider le formulaire
   final _formKey = GlobalKey<FormState>();
+
+  // Contrôleurs pour récupérer les textes saisis
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  // --- LOGIQUE DE CONNEXION ---
   void _handleLogin() async {
+    // Vérification de la validité des champs du formulaire
     if (_formKey.currentState!.validate()) {
       setState(() {
-        _isLoading = true;
+        _isLoading = true; // Active l'indicateur de chargement
       });
 
-      // 1. Simulation d'une petite vérification réseau (1 seconde suffit ici)
+      // 1. Simulation d'un délai réseau (ex: appel API)
       await Future.delayed(const Duration(seconds: 1));
 
       setState(() {
-        _isLoading = false;
+        _isLoading = false; // Désactive l'indicateur
       });
 
-      // 2. Vérification des identifiants
+      // 2. Vérification statique des identifiants (Admin Test)
       if (_emailController.text == "admin@test.com" &&
           _passwordController.text == "123456") {
+        // Vérifie si l'écran est toujours affiché avant de naviguer
         if (mounted) {
-          // 3. NAVIGATION VERS LE LOADING SCREEN DE 5 SECONDES
+          // 3. Redirection vers l'écran de transition "LoadingScreen"
+          // pushReplacement empêche l'utilisateur de revenir en arrière sur le Login
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const LoadingScreen()),
           );
         }
       } else {
+        // Affichage d'une erreur si les identifiants sont faux
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Identifiants incorrects (admin@test.com / 123456)"),
@@ -51,14 +61,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ... Le reste de ton code build (UI) reste identique ...
-    // Le bouton de connexion appellera maintenant le LoadingScreen en cas de succès
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Header (Ton code actuel...)
+            // --- EN-TÊTE (HEADER) AVEC DÉGRADÉ ---
             Container(
               height: 320,
               width: double.infinity,
@@ -69,7 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   end: Alignment.bottomCenter,
                 ),
                 borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(100),
+                  bottomLeft: Radius.circular(100), // Effet arrondi moderne
                 ),
               ),
               child: const Column(
@@ -93,11 +101,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
             ),
+
             const SizedBox(height: 40),
+
+            // --- CORPS DU FORMULAIRE ---
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 35),
               child: Form(
-                key: _formKey,
+                key: _formKey, // Liaison avec la clé globale
                 child: Column(
                   children: [
                     const Text(
@@ -109,8 +120,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 30),
+
+                    // Champ Email
                     TextFormField(
                       controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
                         labelText: "Email",
                         prefixIcon: const Icon(
@@ -121,13 +135,17 @@ class _LoginScreenState extends State<LoginScreen> {
                           borderRadius: BorderRadius.circular(15),
                         ),
                       ),
+                      // Validation simple
                       validator: (value) =>
                           value!.isEmpty ? "Veuillez entrer votre email" : null,
                     ),
+
                     const SizedBox(height: 20),
+
+                    // Champ Mot de Passe
                     TextFormField(
                       controller: _passwordController,
-                      obscureText: true,
+                      obscureText: true, // Cache le texte saisi
                       decoration: InputDecoration(
                         labelText: "Mot de passe",
                         prefixIcon: const Icon(
@@ -141,11 +159,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       validator: (value) =>
                           value!.length < 6 ? "Minimum 6 caractères" : null,
                     ),
+
                     const SizedBox(height: 40),
+
+                    // --- BOUTON DE CONNEXION ---
                     SizedBox(
                       width: double.infinity,
                       height: 55,
                       child: ElevatedButton(
+                        // Désactive le bouton pendant le chargement
                         onPressed: _isLoading ? null : _handleLogin,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF1A237E),

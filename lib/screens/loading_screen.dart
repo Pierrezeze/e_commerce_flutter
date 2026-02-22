@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../main_navigation.dart'; // <-- On importe MainNavigation au lieu de CatalogScreen
+import '../main_navigation.dart'; // Importation du conteneur de navigation principal
 
 class LoadingScreen extends StatefulWidget {
   const LoadingScreen({super.key});
@@ -10,17 +10,19 @@ class LoadingScreen extends StatefulWidget {
 }
 
 class _LoadingScreenState extends State<LoadingScreen> {
-  double _progress = 0;
-  int _counter = 0;
+  double _progress = 0; // Gère la largeur de la barre (de 0.0 à 1.0)
+  int _counter = 0; // Gère le texte affiché (de 0 à 100)
 
   @override
   void initState() {
     super.initState();
-    _startLoading();
+    _startLoading(); // Lance le compte à rebours dès l'affichage de l'écran
   }
 
+  // --- LOGIQUE DU CHARGEMENT ---
   void _startLoading() {
-    // 5000ms / 100 pas = 50ms par unité de pourcentage
+    // Timer.periodic exécute un bloc de code à intervalles réguliers
+    // Ici : 50ms * 100 pas = 5000ms (soit 5 secondes de chargement total)
     Timer.periodic(const Duration(milliseconds: 50), (timer) {
       if (mounted) {
         setState(() {
@@ -28,16 +30,17 @@ class _LoadingScreenState extends State<LoadingScreen> {
             _counter++;
             _progress = _counter / 100;
           } else {
-            timer.cancel();
-            _navigateToHome();
+            timer.cancel(); // Arrête le timer une fois arrivé à 100
+            _navigateToHome(); // Redirige vers l'accueil
           }
         });
       }
     });
   }
 
+  // --- NAVIGATION VERS L'ACCUEIL ---
   void _navigateToHome() {
-    // On utilise MainNavigation pour retrouver le menu du bas
+    // pushReplacement retire le LoadingScreen de la pile pour qu'on ne puisse pas y revenir avec "Retour"
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const MainNavigation()),
@@ -51,6 +54,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
       body: Container(
         width: double.infinity,
         decoration: const BoxDecoration(
+          // Dégradé de bleu pour correspondre à la charte graphique Tech Store
           gradient: LinearGradient(
             colors: [Color(0xFF1A237E), Color(0xFF3949AB)],
             begin: Alignment.topCenter,
@@ -60,15 +64,15 @@ class _LoadingScreenState extends State<LoadingScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Animation icône
+            // Icône dynamique pour l'effet visuel
             const Icon(
-              Icons.rocket_launch_rounded, // Icône plus dynamique
+              Icons.rocket_launch_rounded,
               size: 100,
               color: Colors.white,
             ),
             const SizedBox(height: 40),
 
-            // Chiffre du pourcentage
+            // Affichage du pourcentage dynamique
             Text(
               "$_counter %",
               style: const TextStyle(
@@ -83,12 +87,12 @@ class _LoadingScreenState extends State<LoadingScreen> {
             ),
             const SizedBox(height: 30),
 
-            // Barre de progression stylisée
+            // --- BARRE DE PROGRESSION PERSONNALISÉE ---
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 50),
               child: Stack(
                 children: [
-                  // Fond de la barre
+                  // Fond gris translucide de la barre
                   Container(
                     height: 12,
                     decoration: BoxDecoration(
@@ -96,21 +100,22 @@ class _LoadingScreenState extends State<LoadingScreen> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  // Partie remplie
+                  // Partie remplie (évolue avec _progress)
                   FractionallySizedBox(
                     widthFactor: _progress,
                     child: Container(
                       height: 12,
                       decoration: BoxDecoration(
+                        // Dégradé cyan pour un look "Tech"
                         gradient: const LinearGradient(
                           colors: [Color(0xFF00B8D4), Color(0xFF00E5FF)],
                         ),
                         borderRadius: BorderRadius.circular(10),
                         boxShadow: [
+                          // Effet de néon/brillance
                           BoxShadow(
                             color: const Color(0xFF00B8D4).withOpacity(0.5),
                             blurRadius: 10,
-                            offset: const Offset(0, 0),
                           ),
                         ],
                       ),

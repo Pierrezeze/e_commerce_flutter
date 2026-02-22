@@ -4,7 +4,7 @@ import '../models/product.dart';
 import '../screens/Product_Detail_Screen.dart';
 
 class ProductCard extends StatefulWidget {
-  final Product product;
+  final Product product; // Le produit que cette carte doit afficher
 
   const ProductCard({super.key, required this.product});
 
@@ -15,8 +15,10 @@ class ProductCard extends StatefulWidget {
 class _ProductCardState extends State<ProductCard> {
   @override
   Widget build(BuildContext context) {
+    // InkWell permet de rendre la carte cliquable avec un effet visuel (ripple)
     return InkWell(
       onTap: () {
+        // Navigation vers la page de détails au clic
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -25,11 +27,12 @@ class _ProductCardState extends State<ProductCard> {
         );
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
+        margin: const EdgeInsets.only(bottom: 16), // Espace entre les cartes
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20), // Bords arrondis modernes
           boxShadow: [
+            // Ombre légère pour donner un effet de relief (élévation)
             BoxShadow(
               color: Colors.black.withOpacity(0.05),
               blurRadius: 10,
@@ -41,7 +44,7 @@ class _ProductCardState extends State<ProductCard> {
           padding: const EdgeInsets.all(12.0),
           child: Row(
             children: [
-              // --- SECTION IMAGE AVEC SECURITÉ ---
+              // --- SECTION IMAGE ---
               Container(
                 width: 90,
                 height: 90,
@@ -51,10 +54,11 @@ class _ProductCardState extends State<ProductCard> {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(15),
-                  // Utilisation d'un tag unique pour éviter l'écran noir
+                  // Hero permet une animation fluide de l'image entre deux écrans
                   child: Hero(
                     tag:
                         'hero_${widget.product.name}_${identityHashCode(widget.product)}',
+                    // Vérification si l'image existe physiquement sur le téléphone
                     child:
                         widget.product.image != null &&
                             widget.product.image!.existsSync()
@@ -62,19 +66,18 @@ class _ProductCardState extends State<ProductCard> {
                         : const Icon(
                             Icons.image_not_supported_outlined,
                             color: Colors.grey,
-                            size: 30,
                           ),
                   ),
                 ),
               ),
 
-              const SizedBox(width: 15),
-
-              // --- SECTION INFORMATIONS ---
+              const SizedBox(width: 15), // Espacement entre l'image et le texte
+              // --- SECTION INFORMATIONS (NOM, PRIX, ETC.) ---
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Affichage de la catégorie en majuscules et style discret
                     Text(
                       widget.product.category.toUpperCase(),
                       style: TextStyle(
@@ -85,6 +88,7 @@ class _ProductCardState extends State<ProductCard> {
                       ),
                     ),
                     const SizedBox(height: 2),
+                    // Nom du produit avec limitation à 1 ligne pour garder le design propre
                     Text(
                       widget.product.name,
                       style: const TextStyle(
@@ -96,7 +100,7 @@ class _ProductCardState extends State<ProductCard> {
                       overflow: TextOverflow.ellipsis,
                     ),
 
-                    // --- AJOUT DES PASTILLES DE COULEURS ---
+                    // Boucle pour afficher les petits points de couleurs disponibles
                     if (widget.product.availableColors.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 4),
@@ -119,6 +123,7 @@ class _ProductCardState extends State<ProductCard> {
                         ),
                       ),
 
+                    // Description courte
                     Text(
                       widget.product.description,
                       style: TextStyle(fontSize: 13, color: Colors.grey[600]),
@@ -126,18 +131,23 @@ class _ProductCardState extends State<ProductCard> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
+
+                    // Affichage du prix formaté en Gourdes Haïtiennes (HTG)
                     Text(
-                      "${widget.product.price.toStringAsFixed(2)} €",
+                      "${widget.product.price.toStringAsFixed(2)} HTG",
                       style: const TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w900,
-                        color: Color(0xFF00B8D4),
+                        color: Color(
+                          0xFF00B8D4,
+                        ), // Couleur cyan pour faire ressortir le prix
                       ),
                     ),
                   ],
                 ),
               ),
 
+              // Petite flèche indiquant que l'élément est cliquable
               const Icon(
                 Icons.arrow_forward_ios_rounded,
                 size: 16,
