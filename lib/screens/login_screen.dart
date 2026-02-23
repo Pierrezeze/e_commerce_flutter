@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-// Importation de l'écran de chargement personnalisé
 import 'loading_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -28,20 +27,18 @@ class _LoginScreenState extends State<LoginScreen> {
         _isLoading = true; // Active l'indicateur de chargement
       });
 
-      // 1. Simulation d'un délai réseau (ex: appel API)
+      // Simulation d'un délai réseau (ex: appel API)
       await Future.delayed(const Duration(seconds: 1));
 
       setState(() {
         _isLoading = false; // Désactive l'indicateur
       });
 
-      // 2. Vérification statique des identifiants (Admin Test)
+      // Vérification statique des identifiants (Admin Test)
       if (_emailController.text == "admin@test.com" &&
           _passwordController.text == "123456") {
-        // Vérifie si l'écran est toujours affiché avant de naviguer
         if (mounted) {
-          // 3. Redirection vers l'écran de transition "LoadingScreen"
-          // pushReplacement empêche l'utilisateur de revenir en arrière sur le Login
+          // Redirection vers l'écran de chargement
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const LoadingScreen()),
@@ -66,7 +63,7 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // --- EN-TÊTE (HEADER) AVEC DÉGRADÉ ---
+            // --- EN-TÊTE (HEADER) ---
             Container(
               height: 320,
               width: double.infinity,
@@ -77,7 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   end: Alignment.bottomCenter,
                 ),
                 borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(100), // Effet arrondi moderne
+                  bottomLeft: Radius.circular(100),
                 ),
               ),
               child: const Column(
@@ -108,7 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 35),
               child: Form(
-                key: _formKey, // Liaison avec la clé globale
+                key: _formKey,
                 child: Column(
                   children: [
                     const Text(
@@ -135,7 +132,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           borderRadius: BorderRadius.circular(15),
                         ),
                       ),
-                      // Validation simple
                       validator: (value) =>
                           value!.isEmpty ? "Veuillez entrer votre email" : null,
                     ),
@@ -145,7 +141,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     // Champ Mot de Passe
                     TextFormField(
                       controller: _passwordController,
-                      obscureText: true, // Cache le texte saisi
+                      obscureText: true,
                       decoration: InputDecoration(
                         labelText: "Mot de passe",
                         prefixIcon: const Icon(
@@ -167,7 +163,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       width: double.infinity,
                       height: 55,
                       child: ElevatedButton(
-                        // Désactive le bouton pendant le chargement
                         onPressed: _isLoading ? null : _handleLogin,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF1A237E),
@@ -181,7 +176,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 height: 25,
                                 width: 25,
                                 child: CircularProgressIndicator(
-                                  color: Color(0xFF00B8D4),
+                                  color: Colors.white,
                                   strokeWidth: 3,
                                 ),
                               )

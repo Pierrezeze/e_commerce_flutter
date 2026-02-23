@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'screens/login_screen.dart';
 
 void main() {
+  // On retire le "async" et le chargement des préférences
   runApp(const MyApp());
 }
 
@@ -14,18 +15,15 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Tech Store App',
 
-      // Définition du thème moderne
+      // --- TON THÈME MODERNE (CONSERVÉ) ---
       theme: ThemeData(
         useMaterial3: true,
-        // Palette de couleurs principale
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1A237E), // Dark Blue
+          seedColor: const Color(0xFF1A237E),
           primary: const Color(0xFF1A237E),
-          secondary: const Color(0xFF00B8D4), // Cyan
+          secondary: const Color(0xFF00B8D4),
           surface: Colors.white,
         ),
-
-        // Style des AppBar sur tout le projet
         appBarTheme: const AppBarTheme(
           backgroundColor: Color(0xFF1A237E),
           foregroundColor: Colors.white,
@@ -37,8 +35,6 @@ class MyApp extends StatelessWidget {
             letterSpacing: 1.2,
           ),
         ),
-
-        // Style par défaut des champs de texte (TextFormField)
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: Colors.grey[50],
@@ -52,8 +48,6 @@ class MyApp extends StatelessWidget {
           ),
           labelStyle: const TextStyle(color: Color(0xFF1A237E)),
         ),
-
-        // Style global pour les boutons Elevated
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF1A237E),
@@ -66,7 +60,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
 
-      // Point de départ : Page de connexion
+      // --- POINT DE DÉPART UNIQUE ---
       home: const LoginScreen(),
     );
   }

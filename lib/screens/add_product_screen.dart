@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
-import 'package:image_picker/image_picker.dart'; // Pour choisir des photos
-import '../models/product.dart';
+import 'package:image_picker/image_picker.dart'; // Bibliothèque pour accéder à la galerie/appareil photo
+import '../models/product.dart'; // Importation du modèle de données Produit
 
 class AddProductScreen extends StatefulWidget {
-  final VoidCallback? onSuccess; // Callback déclenché après un ajout réussi
+  final VoidCallback?
+  onSuccess; // Action à exécuter après un enregistrement réussi
 
   const AddProductScreen({super.key, this.onSuccess});
 
@@ -13,18 +14,19 @@ class AddProductScreen extends StatefulWidget {
 }
 
 class _AddProductScreenState extends State<AddProductScreen> {
-  // --- CONTRÔLEURS DE TEXTE ---
-  // Permettent de récupérer les valeurs saisies par l'utilisateur
+  // --- CONTRÔLEURS DE SAISIE ---
+  // Utilisés pour extraire le texte des champs de formulaire
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
   final _descController = TextEditingController();
 
-  // --- ÉTAT DU FORMULAIRE ---
-  String _selectedCategory = 'Electroniques';
-  File? _image; // Stocke le fichier image sélectionné
+  // --- VARIABLES D'ÉTAT ---
+  String _selectedCategory = 'Electroniques'; // Catégorie par défaut
+  File? _image; // Fichier image stocké localement
   List<Color> _selectedColors =
-      []; // Liste des couleurs choisies pour le produit
+      []; // Liste des couleurs cochées par l'utilisateur
 
+  // Listes de données pour les menus et options
   final List<String> _categories = [
     'Electroniques',
     'Vetements',
@@ -44,14 +46,14 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
   @override
   void dispose() {
-    // NETTOYAGE : Libère la mémoire des contrôleurs quand on quitte l'écran
+    // NETTOYAGE : Détruire les contrôleurs pour éviter les fuites de mémoire
     _nameController.dispose();
     _priceController.dispose();
     _descController.dispose();
     super.dispose();
   }
 
-  // --- LOGIQUE : SÉLECTION D'IMAGE ---
+  // --- FONCTION : SÉLECTION DE L'IMAGE ---
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
     // Ouvre la galerie du téléphone
@@ -61,52 +63,85 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
     if (pickedFile != null) {
       setState(() {
-        _image = File(pickedFile.path); // Met à jour l'aperçu
+        _image = File(pickedFile.path); // Met à jour l'UI avec l'image choisie
       });
     }
   }
 
-  // --- LOGIQUE : SAUVEGARDE ---
+  // --- FONCTION : LOGIQUE DE SAUVEGARDE ---
   void _saveProduct() {
-    // Ferme le clavier automatiquement
+    // Ferme le clavier virtuel
     FocusScope.of(context).unfocus();
 
-    // Gestion du format de prix (remplace virgule par point pour le calcul)
+    // Transformation du prix (remplace ',' par '.') pour conversion numérique
     String priceText = _priceController.text.replaceAll(',', '.');
     double? parsedPrice = double.tryParse(priceText);
 
-    // VALIDATION : Vérifie si les champs obligatoires sont remplis
-    if (_nameController.text.isEmpty ||
+    // 1. Validation de l'image (Obligatoire)
+    if (_image == null) {
+      _showSnackBar("📸 L'ajout d'une photo est obligatoire !", Colors.orange);
+      return;
+    }
+
+    // 2. Validation du nom et du prix
+    if (_nameController.text.trim().isEmpty ||
         parsedPrice == null ||
         parsedPrice <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Veuillez entrer un nom et un prix valide"),
-          backgroundColor: Colors.red,
-        ),
+      _showSnackBar(
+        "⚠️ Veuillez remplir le nom et un prix valide.",
+        Colors.red,
       );
       return;
     }
 
-    // CRÉATION de l'objet Produit
+    // 3. Validation de la description (Obligatoire)
+    if (_descController.text.trim().isEmpty) {
+      _showSnackBar(
+        "📝 Veuillez ajouter une description au produit.",
+        Colors.red,
+      );
+      return;
+    }
+
+    // 4. Création de l'objet Produit
     final newProduct = Product(
-      name: _nameController.text,
+      name: _nameController.text.trim(),
       price: parsedPrice,
-      description: _descController.text,
+      description: _descController.text.trim(),
       category: _selectedCategory,
       image: _image,
-      availableColors: List.from(_selectedColors),
+      availableColors: List.from(
+        _selectedColors,
+      ), // Copie de la liste de couleurs
     );
 
-    // Ajout à la liste globale statique
+    // Ajout à la base de données statique (liste globale)
     globalProducts.add(newProduct);
 
-    // Informe le widget parent que l'ajout est réussi (pour rafraîchir l'UI)
+    // Déclenchement du callback de succès (ex: rafraîchir l'écran précédent)
     if (widget.onSuccess != null) {
       widget.onSuccess!();
     }
 
-    // RÉINITIALISATION du formulaire pour un nouvel ajout
+    _showSnackBar("✅ Produit enregistré avec succès !", Colors.green);
+
+    // Réinitialisation du formulaire pour un nouvel ajout
+    _resetFields();
+  }
+
+  // Helper pour afficher des alertes rapides (SnackBars)
+  void _showSnackBar(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  // Helper pour vider le formulaire
+  void _resetFields() {
     _nameController.clear();
     _priceController.clear();
     _descController.clear();
@@ -132,8 +167,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --- ZONE DE SÉLECTION D'IMAGE ---
-            _buildLabel("Image du produit"),
+            // --- SECTION IMAGE ---
+            _buildLabel("Image du produit *"),
             const SizedBox(height: 12),
             Center(
               child: GestureDetector(
@@ -144,14 +179,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.grey.shade300),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+                    // Bordure orange si l'image est absente
+                    border: Border.all(
+                      color: _image == null
+                          ? Colors.orange.shade200
+                          : Colors.grey.shade300,
+                      width: _image == null ? 2 : 1,
+                    ),
                   ),
                   child: _image != null
                       ? ClipRRect(
@@ -164,12 +198,12 @@ class _AddProductScreenState extends State<AddProductScreen> {
                             Icon(
                               Icons.add_a_photo_rounded,
                               size: 50,
-                              color: Colors.grey.shade400,
+                              color: Colors.orange.shade300,
                             ),
                             const SizedBox(height: 8),
-                            Text(
-                              "Ajouter une photo",
-                              style: TextStyle(color: Colors.grey.shade600),
+                            const Text(
+                              "Ajouter une photo (requis)",
+                              style: TextStyle(color: Colors.grey),
                             ),
                           ],
                         ),
@@ -178,24 +212,21 @@ class _AddProductScreenState extends State<AddProductScreen> {
             ),
             const SizedBox(height: 25),
 
-            // --- CHAMPS DE TEXTE ---
+            // --- SECTION DÉTAILS (NOM, PRIX, DESCRIPTION) ---
             _buildLabel("Détails du produit"),
             const SizedBox(height: 10),
             TextField(
               controller: _nameController,
               decoration: const InputDecoration(
-                labelText: "Nom du produit",
+                labelText: "Nom du produit *",
                 prefixIcon: Icon(Icons.shopping_bag_outlined),
               ),
             ),
             const SizedBox(height: 15),
-
-            // Champ Prix configuré pour la monnaie locale (HTG)
             TextField(
               controller: _priceController,
               decoration: const InputDecoration(
-                labelText: "Prix (HTG)",
-                hintText: "Ex: 1500.00",
+                labelText: "Prix (HTG) *",
                 prefixIcon: Icon(Icons.payments_outlined),
               ),
               keyboardType: const TextInputType.numberWithOptions(
@@ -206,14 +237,15 @@ class _AddProductScreenState extends State<AddProductScreen> {
             TextField(
               controller: _descController,
               decoration: const InputDecoration(
-                labelText: "Description",
+                labelText: "Description *",
+                hintText: "Décrivez les caractéristiques...",
                 prefixIcon: Icon(Icons.description_outlined),
               ),
-              maxLines: 2,
+              maxLines: 3,
             ),
             const SizedBox(height: 25),
 
-            // --- SÉLECTION DE CATÉGORIE (DROPDOWN) ---
+            // --- SECTION CATÉGORIE ---
             _buildLabel("Catégorie"),
             const SizedBox(height: 10),
             Container(
@@ -239,7 +271,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
             ),
             const SizedBox(height: 25),
 
-            // --- CHOIX DES COULEURS (WRAP) ---
+            // --- SECTION COULEURS ---
             _buildLabel("Couleurs disponibles"),
             const SizedBox(height: 12),
             Wrap(
@@ -248,11 +280,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
               children: _colorOptions.map((color) {
                 final isSelected = _selectedColors.contains(color);
                 return GestureDetector(
-                  onTap: () => setState(() {
-                    isSelected
-                        ? _selectedColors.remove(color)
-                        : _selectedColors.add(color);
-                  }),
+                  onTap: () {
+                    setState(() {
+                      isSelected
+                          ? _selectedColors.remove(color)
+                          : _selectedColors.add(color);
+                    });
+                  },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     padding: const EdgeInsets.all(3),
@@ -284,7 +318,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
             ),
             const SizedBox(height: 40),
 
-            // --- BOUTON DE VALIDATION FINAL ---
+            // --- BOUTON DE VALIDATION ---
             ElevatedButton(
               onPressed: _saveProduct,
               style: ElevatedButton.styleFrom(
@@ -310,7 +344,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
     );
   }
 
-  // --- PETIT HELPER POUR LES TITRES DE SECTION ---
+  // Widget personnalisé pour les titres de section
   Widget _buildLabel(String text) {
     return Text(
       text,
