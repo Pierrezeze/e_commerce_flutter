@@ -35,8 +35,8 @@ class _LoginScreenState extends State<LoginScreen> {
       });
 
       // Vérification statique des identifiants (Admin Test)
-      if (_emailController.text == "admin@test.com" &&
-          _passwordController.text == "123456") {
+      if (_emailController.text == "fmardoche89@gmail.com" &&
+          _passwordController.text == "dieune@123") {
         if (mounted) {
           // Redirection vers l'écran de chargement
           Navigator.pushReplacement(
